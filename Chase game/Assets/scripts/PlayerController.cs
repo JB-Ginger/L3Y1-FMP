@@ -8,7 +8,8 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour
 {
     [Header("UI")]
-    public TMP_Text timerTxt;
+    public Slider timerSlider;
+    public float maxTime;
     public float timer;
 
     [Header("Health")]
@@ -29,6 +30,16 @@ public class PlayerController : MonoBehaviour
     public float groundDistance;
     public LayerMask layerMask;
 
+    [Header("WallJump")]
+    public float wallCheckDistance;
+    public bool nextToLeftWall;
+    public bool nextToRightWall;
+    public float gravityLimit;
+    public float currentGravity;
+    public float wallGravity;
+    public LayerMask wallLayer;
+
+
     RaycastHit2D hit;
 
     Vector3 startPos;
@@ -46,13 +57,35 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        timer += Time.deltaTime;
-        timerTxt.text = timer.ToString("F2");
+
+        Timer();
         
         Movement();
+        GravityLimit();
+
         Health();
-        Shoot();
+        // Shoot();
         MovementDirection();
+    }
+
+    void Timer()
+    {
+        if (inputs == 0)
+        {
+            timer -= Time.deltaTime;
+        }
+        else
+        {
+            timer = maxTime;
+        }
+
+        timerSlider.value = timer;
+        timerSlider.maxValue = maxTime;
+
+        if (timer <= 0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
     }
 
     void Movement()
@@ -69,6 +102,39 @@ public class PlayerController : MonoBehaviour
             {
                 rb.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
             }
+        }
+
+        WallJump();
+    }
+
+    void WallJump()
+    {
+        nextToLeftWall = Physics2D.Raycast(transform.position, -transform.right, wallCheckDistance, wallLayer);
+        nextToRightWall = Physics2D.Raycast(transform.position, transform.right, wallCheckDistance, wallLayer);
+        
+        if (nextToLeftWall || nextToRightWall)
+        {
+            currentGravity = wallGravity;
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                rb.AddForce(transform.up * jumpForce, ForceMode2D.Impulse);
+            }
+        }
+        else
+        {
+            currentGravity = gravityLimit;
+        }
+    }
+
+    void GravityLimit()
+    {
+        if (rb.velocity.y < currentGravity)
+        {
+            Vector2 newVelocity;
+            newVelocity = rb.velocity;
+            newVelocity.y = currentGravity;
+            rb.velocity = newVelocity;
         }
     }
 
