@@ -64,7 +64,7 @@ public class PlayerController : MonoBehaviour
         GravityLimit();
 
         Health();
-        // Shoot();
+        Shoot();
         MovementDirection();
     }
 
@@ -178,16 +178,16 @@ void Shoot()
         if (other.gameObject.CompareTag("Hazard"))
         {
             transform.position = startPos;
+            
         }
         if (other.gameObject.CompareTag("Exit"))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         }
-            if (other.gameObject.CompareTag("Enemy"))
+        if (other.gameObject.CompareTag("Enemy"))
         {
             currentHealth--;
-            Destroy(other.gameObject);
+           
         }
-
     }
 }
